@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     name: ${{ matrix.os }} ${{ matrix.run }}/5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           name: ${{ matrix.os }}
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     name: no-suffix test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           name: android
