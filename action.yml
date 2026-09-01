@@ -1,0 +1,60 @@
+name: App metrics
+description: Collect and test app metrics
+
+inputs:
+  config:
+    description: Configuration file (YAML or HOCON)
+    required: true
+  name:
+    description: |
+      Metrics group identifier that will be used in the generated PR comment header.
+      This is useful if you run this action multiple times in the same PR.
+    required: false
+    default: ''
+  sauce-user:
+    description: SauceLabs username
+    required: true
+  sauce-key:
+    description: SauceLabs access key
+    required: true
+  artifact-suffix:
+    description: Artifact identifier, if the action is run multiple times in the same workflow.
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - run: |
+        echo Using config file: ${{ inputs.config }}
+        cat ${{ inputs.config }}
+      shell: bash
+
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Run tests
+      run: ./gradlew :test
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        RESULT_NAME: ${{ inputs.name }}
+        TEST_CONFIG: ${{ github.workspace }}/${{ inputs.config }}
+        SAUCE_USERNAME: ${{ inputs.sauce-user }}
+        SAUCE_ACCESS_KEY: ${{ inputs.sauce-key }}
+
+    - name: Process results
+      run: ./gradlew :run
+      id: process
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        RESULT_NAME: ${{ inputs.name }}
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.process.outputs.artifactName }}${{ inputs.artifact-suffix }}
+        path: ${{ steps.process.outputs.artifactPath }}
