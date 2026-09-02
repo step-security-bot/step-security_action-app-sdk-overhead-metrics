@@ -70,9 +70,11 @@ runs:
       shell: bash
 
     - run: |
-        echo Using config file: ${{ inputs.config }}
-        cat ${{ inputs.config }}
+        echo "Using config file: $CONFIG"
+        cat "$CONFIG"
       shell: bash
+      env:
+        CONFIG: ${{ inputs.config }}
 
     - uses: actions/setup-java@v6
       with:
